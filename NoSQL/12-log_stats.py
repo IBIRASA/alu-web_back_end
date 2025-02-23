@@ -7,12 +7,17 @@ if __name__ == "__main__":
     """ Provides some stats about Nginx logs stored in MongoDB """
     try:
         # Connect to MongoDB
-        client = MongoClient('mongodb://127.0.0.1:27017')
+        client = MongoClient('mongodb://127.0.0.1:27017')  # Ensure MongoDB is running
         db = client.logs
         nginx_collection = db.nginx
 
+        # Print all collections in the logs database for debugging
+        print(f'Collections in logs database: {db.list_collection_names()}')
+
         # Check if collection is empty
         n_logs = nginx_collection.count_documents({})
+        print(f'Initial log count: {n_logs}')
+
         if n_logs == 0:
             print("No logs found. Inserting sample data...")
             sample_data = [
@@ -27,10 +32,12 @@ if __name__ == "__main__":
                 {"method": "GET", "path": "/check"},
                 {"method": "GET", "path": "/logs"}
             ]
-            nginx_collection.insert_many(sample_data)
+            # Insert sample data and check if insertion was successful
+            result = nginx_collection.insert_many(sample_data)
+            print(f"Inserted {len(result.inserted_ids)} documents")
             n_logs = nginx_collection.count_documents({})  # Update log count
 
-        # Print log count
+        # Print log count after insertion
         print(f'{n_logs} logs')
 
         # Count and display method usage
